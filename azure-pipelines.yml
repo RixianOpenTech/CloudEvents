@@ -1,0 +1,53 @@
+trigger: [ "*" ]
+
+pool:
+  vmImage: 'VS2017-Win2016' #'Ubuntu 16.04'
+
+variables:
+  buildConfiguration: 'Release'
+  system.prefergit: true
+
+steps:
+- checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+  persistCredentials: true  # set to 'true' to leave the OAuth token in the Git config after the initial fetch. Required for git commands.
+
+- task: gittools.gitversion.gitversion-task.GitVersion@4
+  displayName: GitVersion
+
+- task: DotNetCoreInstaller@0
+  displayName: 'Install .NET Core SDK Version 2.2.203'
+  inputs:
+    version: '2.2.203'
+
+- script: dotnet restore
+  displayName: 'Restore'
+
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'Build'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Test'
+  inputs:
+    command: test
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: Pack
+  inputs:
+    command: custom
+    projects: '**\src\**\*.csproj'
+    custom: pack
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) /p:SourceRevisionId=$(GitVersion.FullBuildMetadata)  /p:PackageVersion=$(GitVersion.NugetVersion) --verbosity Detailed'
+
+- task: DotNetCoreCLI@2
+  displayName: Push
+  inputs:
+    command: push
+    publishVstsFeed: 'c9303e61-4f4a-4a1c-a92c-75051416de75'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
