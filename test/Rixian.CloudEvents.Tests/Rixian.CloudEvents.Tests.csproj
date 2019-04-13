@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="samples\**" />
+    <EmbeddedResource Remove="samples\**" />
+    <None Remove="samples\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -22,10 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="samples\**" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <None Update="blns.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="blns.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="v02\samples\binary\pdf1.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -47,10 +55,6 @@
     <None Update="v02\samples\string\string1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="samples\" />
   </ItemGroup>
 
 </Project>

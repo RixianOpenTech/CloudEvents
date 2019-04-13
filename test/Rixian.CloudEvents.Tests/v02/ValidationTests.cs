@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Xunit;
@@ -11,140 +12,438 @@ namespace Rixian.CloudEvents.Tests.v02
 {
     public class ValidationTests
     {
-        [Theory]
-        [InlineData("json1.json")]
-        [InlineData("json2.json")]
-        public void TestJsonFiles(string fileName)
+        [Fact]
+        public void Basic_Success()
         {
-            var jobj = JObject.Parse(@"
+            var json = @"
 {
-  'specversion': '0.2',
-  'type': 'com.example.someevent',
-  'source': '/mycontext',
   'id': 'C234-1234-1234',
-  'time': '2019-04-13T15:07:00.2031033+00:00'
-}
-");
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(jobj);
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData("string1.json")]
-        public void TestStringFilesV02(string fileName)
+
+        #region id Field Tests
+        [Fact]
+        public void Id_Guid_Success()
         {
-            var json = File.ReadAllText($@".\v02\samples\string\{fileName}");
-            var evnt = CloudEventV0_2.Deserialize(json);
-
-            evnt.Should().BeOfType<StringCloudEventV0_2>();
-        }
-
-        [Theory]
-        [InlineData("none1.json")]
-        public void TestNoDataFiles(string fileName)
-        {
-            var json = File.ReadAllText($@".\v02\samples\none\{fileName}");
-            var evnt = CloudEventV0_1.Deserialize(json);
-
-            evnt.Should().BeOfType<CloudEventV0_1>();
-            evnt.Should().NotBeOfType<JsonCloudEventV0_1>();
-            evnt.Should().NotBeOfType<BinaryCloudEventV0_1>();
-            evnt.Should().NotBeOfType<StringCloudEventV0_1>();
-        }
-
-        [Theory]
-        [InlineData("custom1.json")]
-        public void CustomEvent(string fileName)
-        {
-            var json = File.ReadAllText($@".\v02\samples\custom\{fileName}");
-            var evnt = JsonConvert.DeserializeObject<TestCloudEvent>(json);
-
-            evnt.Should().NotBeNull();
-            evnt.Should().BeOfType<TestCloudEvent>();
-        }
-
-        [Theory]
-        [InlineData("AAAAAA")]
-        public void BinaryEvent_ContainsData_Success(string data)
-        {
-            var evnt = CloudEventV0_2.CreateCloudEvent("test", new Uri("/", UriKind.RelativeOrAbsolute), Encoding.UTF8.GetBytes(data));
-
-            evnt.Should().NotBeNull();
-            evnt.Should().BeOfType<BinaryCloudEventV0_2>();
-
-            var jobj = JObject.FromObject(evnt);
-            jobj.ContainsKey("datacontentencoding").Should().BeTrue();
-
-            //
-            // Can explicitly deserialize to binary
-            var evnt2 = jobj.ToObject<BinaryCloudEventV0_2>();
-            evnt2.Should().NotBeNull();
-            evnt2.Data.Should().NotBeNull();
-
-            //
-            // Without a type provided this should deserialize to a binary event
-            var evnt3 = CloudEventV0_2.Deserialize(jobj.ToString());
-            evnt3.Should().NotBeNull();
-            evnt3.Should().BeOfType<BinaryCloudEventV0_2>();
+            var json = @"
+{
+  'id': '00717CE8-D29E-4C2E-84D4-A9E026575778',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext'
+}
+";
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeTrue();
         }
 
         [Fact]
-        public void BinaryEvent_NoData_Success()
+        public void Id_Empty_Fail()
         {
-            var evnt = CloudEventV0_2.CreateCloudEvent("test", new Uri("/", UriKind.RelativeOrAbsolute), (byte[])null);
+            var json = @"
+{
+  'id': '',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext'
+}
+";
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
 
-            evnt.Should().NotBeNull();
-            evnt.Should().BeOfType<BinaryCloudEventV0_2>();
+        [Fact]
+        public void Id_None_Fail()
+        {
+            var json = @"
+{
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext'
+}
+";
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
 
-            var jobj = JObject.FromObject(evnt);
+        #region type Field Tests
+        [Fact]
+        public void Type_Empty_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': '',
+  'specversion': '0.2',
+  'source': '/mycontext'
+}";
 
-            //
-            // Verify that the 'datacontentencoding' field is not serialized without data
-            jobj.ContainsKey("datacontentencoding").Should().BeFalse();
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
 
-            //
-            // Can explicitly deserialize to binary even without data present
-            var evnt2 = jobj.ToObject<BinaryCloudEventV0_2>();
-            evnt2.Should().NotBeNull();
-            evnt2.Data.Should().BeNull();
+        [Fact]
+        public void Type_None_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'specversion': '0.2',
+  'source': '/mycontext'
+}";
 
-            //
-            // Without a type provided this should deserialize to a generic event
-            var evnt3 = CloudEventV0_2.Deserialize(jobj.ToString());
-            evnt3.Should().NotBeNull();
-            evnt3.Should().BeOfType<CloudEventV0_2>();
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
+
+        #region specversion Field Tests
+        [Fact]
+        public void SpecVersion_Empty_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '',
+  'source': '/mycontext'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void SpecVersion_None_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'source': '/mycontext'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void SpecVersion_Incorrect_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.1',
+  'source': '/mycontext'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
+
+        #region source Field Tests
+        [Fact]
+        public void Source_FullUri_Success()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': 'https://example.com/foo'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Source_Empty_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': ''
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Source_None_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Source_Invalid_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '`~!@#$%^&*()-_=+[{]};:'"",<.>/?'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
+
+
+
+        #region time Field Tests
+        [Fact]
+        public void Time_Basic_Success()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'time': '2019-04-13T15:07:00.2031033+00:00'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeTrue();
+        }
+
+        [Fact]
+        public void Time_Empty_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'time': ''
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Time_Invalid_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'time': 'ABCDEFG'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Time_NoTimeZone_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'time': '2019-04-13T15:07:00.2031033'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
+
+        #region schemaurl Field Tests
+        [Fact]
+        public void SchemaUrl_FullUri_Success()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'schemaurl': 'https://example.com/foo'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeTrue();
+        }
+
+        [Fact]
+        public void SchemaUrl_Empty_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'schemaurl': ''
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+
+        [Fact]
+        public void SchemaUrl_Invalid_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'schemaurl': '`~!@#$%^&*()-_=+[{]};:'"",<.>/?'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
+
+
+        #region contenttype Field Tests
+        [Fact]
+        public void ContentType_Basic_Success()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'contenttype': 'text/plain'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ContentType_Empty_Fail()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'contenttype': ''
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
         }
 
         [Theory]
-        [InlineData("custombinary1.json")]
-        public void CustomBinaryEvent_Success(string fileName)
+        [InlineData("aaaaaa")]
+        [InlineData("pdf")]
+        [InlineData("application\\pdf")]
+        public void ContentType_Invalid_Fail(string contentType)
         {
-            var json = File.ReadAllText($@".\v02\samples\custom\{fileName}");
-            var evnt = JsonConvert.DeserializeObject<TestBinaryEvent>(json);
+            var json = $@"
+{{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'contenttype': '{contentType}'
+}}";
 
-            evnt.Should().NotBeNull();
-            evnt.Should().BeOfType<TestBinaryEvent>();
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
+        #endregion
 
-            var dataString = Encoding.UTF8.GetString(evnt.Data);
-            dataString.Should().Be("This is a test!");
 
-            evnt.SampleField1.Should().Be("ABCDEFG");
+        #region data Field Tests
+        [Fact]
+        public void Data_String_Basic_Success()
+        {
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'data': 'This is some text...'
+}";
+
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData("pdf1.pdf", "application/pdf")]
-        public void BinaryEvent_LargeData_Success(string fileName, string contentType)
+        [Fact]
+        public void Data_String_Empty_Fail()
         {
-            var data = File.ReadAllBytes($@".\v02\samples\binary\{fileName}");
-            var evnt = CloudEventV0_2.CreateCloudEvent("test", new Uri("/", UriKind.RelativeOrAbsolute), data, contentType, null, null);
+            var json = @"
+{
+  'id': 'C234-1234-1234',
+  'type': 'com.example.someevent',
+  'specversion': '0.2',
+  'source': '/mycontext',
+  'data': ''
+}";
 
-            evnt.Should().NotBeNull();
-            evnt.Should().BeOfType<BinaryCloudEventV0_2>();
-            evnt.DataContentType.Should().Be(contentType);
+            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            validationResults.Item1.Should().BeFalse();
+        }
 
-            evnt.Data.Length.Should().Be(data.Length);
+//        [Fact]
+//        public void Data_String_BLNS_Success()
+//        {
+//            var blns = GetBlns();
 
-            var json = JsonConvert.SerializeObject(evnt, Formatting.Indented);
+//            foreach (var str in blns)
+//            {
+//                var json = $@"
+//{{
+//  'id': 'C234-1234-1234',
+//  'type': 'com.example.someevent',
+//  'specversion': '0.2',
+//  'source': '/mycontext',
+//  'data': '{str}'
+//}}";
+
+//                var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+//                validationResults.Item1.Should().BeTrue();
+//            }
+//        }
+        #endregion
+
+        private static string[] GetBlns()
+        {
+            var lines = File.ReadAllLines(@"blns.txt");
+            return lines.Where(l => l.StartsWith("#") == false).Where(l => string.IsNullOrEmpty(l) == false).ToArray();
         }
     }
 }

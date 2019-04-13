@@ -9,21 +9,26 @@ namespace Rixian.CloudEvents
 {
     public class CloudEventV0_2
     {
-        public const string RFC3339RegexPattern = @"^(?<fullyear>\d{4})-(?<month>0[1-9]|1[0-2])-(?<mday>0[1-9]|[12][0-9]|3[01])T(?<hour>[01][0-9]|2[0-3]):(?<minute>[0-5][0-9]):(?<second>[0-5][0-9]|60)(?<secfrac>\.[0-9]+)?(Z|(\+|-)(?<offset_hour>[01][0-9]|2[0-3]):(?<offset_minute>[0-5][0-9]))$";
+        //public const string RFC3339RegexPattern = @"^(?<fullyear>\d{4})-(?<month>0[1-9]|1[0-2])-(?<mday>0[1-9]|[12][0-9]|3[01])T(?<hour>[01][0-9]|2[0-3]):(?<minute>[0-5][0-9]):(?<second>[0-5][0-9]|60)(?<secfrac>\.[0-9]+)?(Z|(\+|-)(?<offset_hour>[01][0-9]|2[0-3]):(?<offset_minute>[0-5][0-9]))$";
+        public const string RFC3339RegexPattern = @"^([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(([Zz])|([\+|\-]([01][0-9]|2[0-3]):[0-5][0-9]))$";
         private static Regex rfc3339Regex = new Regex(RFC3339RegexPattern);
         
         public const string RFC2046RegexPattern = @"[a-zA-Z0-9!#$%^&\\*_\\-\\+{}\\|'.`~]+/[a-zA-Z0-9!#$%^&\\*_\\-\\+{}\\|'.`~]+";
         private static Regex rfc2046Regex = new Regex(RFC2046RegexPattern);
 
+        // See: https://stackoverflow.com/a/475217
+        public const string Base64RegexPattern = @"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$";
+        private static Regex base64Regex = new Regex(Base64RegexPattern);
+
         // Required
         [JsonRequired]
         [JsonProperty("id", Order = int.MinValue)]
-        public string EventId { get; set; }
+        public string Id { get; set; }
 
         // Required
         [JsonRequired]
         [JsonProperty("type", Order = int.MinValue + 1)]
-        public string EventType { get; set; }
+        public string Type { get; set; }
 
         // Required
         [JsonRequired]
@@ -36,22 +41,18 @@ namespace Rixian.CloudEvents
         public Uri Source { get; set; }
 
         // Optional
-        [JsonProperty("subject", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 4)]
-        public string Subject { get; set; }
-
-        // Optional
         // Serialize RFC 3339
         [JsonConverter(typeof(IsoDateTimeConverter))]
-        [JsonProperty("time", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 5)]
-        public DateTimeOffset? EventTime { get; set; }
+        [JsonProperty("time", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 4)]
+        public DateTimeOffset? Time { get; set; }
 
         // Optional
-        [JsonProperty("schemaurl", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 6)]
+        [JsonProperty("schemaurl", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 5)]
         public Uri SchemaUrl { get; set; }
 
         // Optional
-        [JsonProperty("datacontenttype", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 7)]
-        public string DataContentType { get; set; }
+        [JsonProperty("contenttype", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 6)]
+        public string ContentType { get; set; }
 
         public static bool ValidateJson(string json) => ValidateJsonDetailed(json).Item1;
         public static bool ValidateJson(JObject jobj) => ValidateJsonDetailed(jobj).Item1;
@@ -60,7 +61,12 @@ namespace Rixian.CloudEvents
         {
             try
             {
-                return ValidateJsonDetailed(JObject.Parse(json));
+                var obj = JsonConvert.DeserializeObject(json,
+                   new JsonSerializerSettings
+                   {
+                       DateParseHandling = DateParseHandling.None
+                   });
+                return ValidateJsonDetailed(JObject.FromObject(obj));
             }
             catch (Exception ex)
             {
@@ -73,29 +79,29 @@ namespace Rixian.CloudEvents
             List<string> errors = new List<string>();
             try
             {
-                bool result = false;
+                bool result = true;
 
                 var containsId = jobj.ContainsKey("id");
                 var containsType = jobj.ContainsKey("type");
                 var containsSpecVersion = jobj.ContainsKey("specversion");
                 var containsSource = jobj.ContainsKey("source");
-                var containsSubject = jobj.ContainsKey("subject");
+                //var containsSubject = jobj.ContainsKey("subject");
                 var containsTime = jobj.ContainsKey("time");
                 var containsSchemaUrl = jobj.ContainsKey("schemaurl");
                 var containsData = jobj.ContainsKey("data");
-                var containsDataContentType = jobj.ContainsKey("datacontenttype");
-                var containsDataContentEncoding = jobj.ContainsKey("datacontentencoding");
+                var containsContentType = jobj.ContainsKey("contenttype");
+                //var containsDataContentEncoding = jobj.ContainsKey("datacontentencoding");
 
                 var id = jobj["id"]?.ToString();
                 var type = jobj["type"]?.ToString();
                 var specVersion = jobj["specversion"]?.ToString();
                 var source = jobj["source"]?.ToString();
-                var subject = jobj["subject"]?.ToString();
+                //var subject = jobj["subject"]?.ToString();
                 var time = jobj["time"]?.ToString();
                 var schemaUrl = jobj["schemaurl"]?.ToString();
                 var data = jobj["data"]?.ToString();
-                var dataContentType = jobj["datacontenttype"]?.ToString();
-                var dataContentEncoding = jobj["datacontentencoding"]?.ToString();
+                var contentType = jobj["contenttype"]?.ToString();
+                //var dataContentEncoding = jobj["datacontentencoding"]?.ToString();
 
                 //
                 // [id]
@@ -172,28 +178,33 @@ namespace Rixian.CloudEvents
                     result = false;
                     errors.Add("Required field 'source' is null.");
                 }
+                else if (string.IsNullOrWhiteSpace(source))
+                {
+                    result = false;
+                    errors.Add("Required field 'source' must contain a value.");
+                }
                 else if (Uri.TryCreate(source, UriKind.RelativeOrAbsolute, out Uri sourceUri) == false)
                 {
                     result = false;
                     errors.Add("Required field 'source' must contain a valid Uri.");
                 }
 
-                //
-                // [subject]
-                // Optional, non-empty string
-                if (containsSubject)
-                {
-                    if (subject == null)
-                    {
-                        result = false;
-                        errors.Add("Optional field 'subject' is null.");
-                    }
-                    else if (string.IsNullOrWhiteSpace(subject))
-                    {
-                        result = false;
-                        errors.Add("Optional field 'subject' must contain a value.");
-                    }
-                }
+                ////
+                //// [subject]
+                //// Optional, non-empty string
+                //if (containsSubject)
+                //{
+                //    if (subject == null)
+                //    {
+                //        result = false;
+                //        errors.Add("Optional field 'subject' is null.");
+                //    }
+                //    else if (string.IsNullOrWhiteSpace(subject))
+                //    {
+                //        result = false;
+                //        errors.Add("Optional field 'subject' must contain a value.");
+                //    }
+                //}
 
                 //
                 // [time]
@@ -227,6 +238,11 @@ namespace Rixian.CloudEvents
                         result = false;
                         errors.Add("Optional field 'schemaurl' is null.");
                     }
+                    else if (string.IsNullOrWhiteSpace(schemaUrl))
+                    {
+                        result = false;
+                        errors.Add("Required field 'schemaurl' must contain a value.");
+                    }
                     else if (Uri.TryCreate(schemaUrl, UriKind.RelativeOrAbsolute, out Uri schemaUri) == false)
                     {
                         result = false;
@@ -235,43 +251,43 @@ namespace Rixian.CloudEvents
                 }
 
                 //
-                // [datacontenttype]
+                // [contenttype]
                 // Optional, non-empty string
-                if (containsDataContentType)
+                if (containsContentType)
                 {
-                    if (dataContentType == null)
+                    if (contentType == null)
                     {
                         result = false;
-                        errors.Add("Optional field 'datacontenttype' is null.");
+                        errors.Add("Optional field 'contenttype' is null.");
                     }
-                    else if (string.IsNullOrWhiteSpace(dataContentType))
+                    else if (string.IsNullOrWhiteSpace(contentType))
                     {
                         result = false;
-                        errors.Add("Optional field 'datacontenttype' must contain a value.");
+                        errors.Add("Optional field 'contenttype' must contain a value.");
                     }
-                    else if (rfc2046Regex.IsMatch(dataContentType) == false)
+                    else if (rfc2046Regex.IsMatch(contentType) == false)
                     {
                         result = false;
-                        errors.Add("Optional field 'datacontenttype' must adhere to the format specified in RFC 2046.");
+                        errors.Add("Optional field 'contenttype' must adhere to the format specified in RFC 2046.");
                     }
                 }
 
-                //
-                // [datacontentencoding]
-                // Optional, non-empty string
-                if (containsDataContentEncoding)
-                {
-                    if (dataContentEncoding == null)
-                    {
-                        result = false;
-                        errors.Add("Optional field 'datacontentencoding' is null.");
-                    }
-                    else if (string.IsNullOrWhiteSpace(dataContentEncoding))
-                    {
-                        result = false;
-                        errors.Add("Optional field 'datacontentencoding' must contain a value.");
-                    }
-                }
+                ////
+                //// [datacontentencoding]
+                //// Optional, non-empty string
+                //if (containsDataContentEncoding)
+                //{
+                //    if (dataContentEncoding == null)
+                //    {
+                //        result = false;
+                //        errors.Add("Optional field 'datacontentencoding' is null.");
+                //    }
+                //    else if (string.IsNullOrWhiteSpace(dataContentEncoding))
+                //    {
+                //        result = false;
+                //        errors.Add("Optional field 'datacontentencoding' must contain a value.");
+                //    }
+                //}
 
                 //
                 // [data]
@@ -307,7 +323,7 @@ namespace Rixian.CloudEvents
             if (!jobj.ContainsKey("data"))
                 return jobj.ToObject<CloudEventV0_2>();
 
-            var contentType = jobj.Value<string>("datacontenttype")?.ToLowerInvariant()?.Trim();
+            var contentType = jobj.Value<string>("contenttype")?.ToLowerInvariant()?.Trim();
 
             // SPEC: Section 3.1 - Paragraph 3
             // https://github.com/cloudevents/spec/blob/v0.1/json-format.md#31-special-handling-of-the-data-attribute
@@ -315,13 +331,17 @@ namespace Rixian.CloudEvents
             {
                 return jobj.ToObject<JsonCloudEventV0_2>();
             }
-            else if (jobj.ContainsKey("datacontentencoding"))
-            {
-                return jobj.ToObject<BinaryCloudEventV0_2>();
-            }
             else if (jobj.ContainsKey("data"))
             {
-                return jobj.ToObject<StringCloudEventV0_2>();
+                var data = jobj["data"]?.ToString();
+                if (base64Regex.IsMatch(data))
+                {
+                    return jobj.ToObject<BinaryCloudEventV0_2>();
+                }
+                else
+                {
+                    return jobj.ToObject<StringCloudEventV0_2>();
+                }
             }
             else
             {
@@ -334,9 +354,9 @@ namespace Rixian.CloudEvents
             // Should there be some reasonable upper bound on the payload size?
             return new CloudEventV0_2
             {
-                EventId = Guid.NewGuid().ToString(),
-                EventTime = DateTimeOffset.UtcNow,
-                EventType = eventType,
+                Id = Guid.NewGuid().ToString(),
+                Time = DateTimeOffset.UtcNow,
+                Type = eventType,
                 Source = source,
             };
         }
@@ -354,13 +374,12 @@ namespace Rixian.CloudEvents
             // Should there be some reasonable upper bound on the payload size?
             return new JsonCloudEventV0_2
             {
-                EventId = Guid.NewGuid().ToString(),
-                EventTime = DateTimeOffset.UtcNow,
-                EventType = eventType,
+                Id = Guid.NewGuid().ToString(),
+                Time = DateTimeOffset.UtcNow,
+                Type = eventType,
                 Source = source,
-                Subject = subject,
                 SchemaUrl = schemaUrl,
-                DataContentType = contentType,
+                ContentType = contentType,
                 Data = payload,
             };
         }
@@ -374,13 +393,12 @@ namespace Rixian.CloudEvents
             // Should there be some reasonable upper bound on the payload size?
             return new StringCloudEventV0_2
             {
-                EventId = Guid.NewGuid().ToString(),
-                EventTime = DateTimeOffset.UtcNow,
-                EventType = eventType,
+                Id = Guid.NewGuid().ToString(),
+                Time = DateTimeOffset.UtcNow,
+                Type = eventType,
                 Source = source,
-                Subject = subject,
                 SchemaUrl = schemaUrl,
-                DataContentType = contentType,
+                ContentType = contentType,
                 Data = payload
             };
         }
@@ -394,13 +412,12 @@ namespace Rixian.CloudEvents
             // Should there be some reasonable upper bound on the payload size?
             return new BinaryCloudEventV0_2
             {
-                EventId = Guid.NewGuid().ToString(),
-                EventTime = DateTimeOffset.UtcNow,
-                EventType = eventType,
+                Id = Guid.NewGuid().ToString(),
+                Time = DateTimeOffset.UtcNow,
+                Type = eventType,
                 Source = source,
-                Subject = subject,
                 SchemaUrl = schemaUrl,
-                DataContentType = contentType,
+                ContentType = contentType,
                 Data = payload,
             };
         }

@@ -37,12 +37,12 @@ namespace Rixian.CloudEvents.Tests.v02
         public void TestNoDataFiles(string fileName)
         {
             var json = File.ReadAllText($@".\v02\samples\none\{fileName}");
-            var evnt = CloudEventV0_1.Deserialize(json);
+            var evnt = CloudEventV0_2.Deserialize(json);
 
-            evnt.Should().BeOfType<CloudEventV0_1>();
-            evnt.Should().NotBeOfType<JsonCloudEventV0_1>();
-            evnt.Should().NotBeOfType<BinaryCloudEventV0_1>();
-            evnt.Should().NotBeOfType<StringCloudEventV0_1>();
+            evnt.Should().BeOfType<CloudEventV0_2>();
+            evnt.Should().NotBeOfType<JsonCloudEventV0_2>();
+            evnt.Should().NotBeOfType<BinaryCloudEventV0_2>();
+            evnt.Should().NotBeOfType<StringCloudEventV0_2>();
         }
 
         [Theory]
@@ -66,7 +66,6 @@ namespace Rixian.CloudEvents.Tests.v02
             evnt.Should().BeOfType<BinaryCloudEventV0_2>();
 
             var jobj = JObject.FromObject(evnt);
-            jobj.ContainsKey("datacontentencoding").Should().BeTrue();
 
             //
             // Can explicitly deserialize to binary
@@ -90,10 +89,6 @@ namespace Rixian.CloudEvents.Tests.v02
             evnt.Should().BeOfType<BinaryCloudEventV0_2>();
 
             var jobj = JObject.FromObject(evnt);
-
-            //
-            // Verify that the 'datacontentencoding' field is not serialized without data
-            jobj.ContainsKey("datacontentencoding").Should().BeFalse();
 
             //
             // Can explicitly deserialize to binary even without data present
@@ -133,7 +128,7 @@ namespace Rixian.CloudEvents.Tests.v02
 
             evnt.Should().NotBeNull();
             evnt.Should().BeOfType<BinaryCloudEventV0_2>();
-            evnt.DataContentType.Should().Be(contentType);
+            evnt.ContentType.Should().Be(contentType);
 
             evnt.Data.Length.Should().Be(data.Length);
 
