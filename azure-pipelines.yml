@@ -6,6 +6,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   system.prefergit: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 steps:
 - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
