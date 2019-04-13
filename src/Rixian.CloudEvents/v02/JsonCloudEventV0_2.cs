@@ -5,8 +5,9 @@ namespace Rixian.CloudEvents
 {
     public class JsonCloudEventV0_2 : CloudEventV0_2
     {
-        // Optional
-        [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
+        // Required
+        [JsonRequired]
+        [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 8)]
         public JToken Data { get; set; }
     }
 }

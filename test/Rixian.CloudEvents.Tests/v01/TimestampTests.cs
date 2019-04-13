@@ -3,7 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using Xunit;
 
-namespace Rixian.CloudEvents.Tests
+namespace Rixian.CloudEvents.Tests.v01
 {
     public class TimestampTests
     {
