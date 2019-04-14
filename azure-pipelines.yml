@@ -42,12 +42,12 @@ steps:
     custom: pack
     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) /p:SourceRevisionId=$(GitVersion.FullBuildMetadata)  /p:PackageVersion=$(GitVersion.NugetVersion) --verbosity Detailed'
 
-- task: DotNetCoreCLI@2
-  displayName: Push
-  inputs:
-    command: push
-    publishVstsFeed: 'c9303e61-4f4a-4a1c-a92c-75051416de75'
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+# - task: DotNetCoreCLI@2
+#   displayName: Push
+#   inputs:
+#     command: push
+#     publishVstsFeed: 'c9303e61-4f4a-4a1c-a92c-75051416de75'
+#   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact'
