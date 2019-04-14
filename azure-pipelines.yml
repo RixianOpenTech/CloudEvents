@@ -6,7 +6,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   system.prefergit: true
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   NUGET_XMLDOC_MODE: 'skip'
 
 steps:
