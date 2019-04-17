@@ -325,7 +325,7 @@ namespace Rixian.CloudEvents
 
         public static CloudEventV0_2 Deserialize(JObject jobj)
         {
-            if (jobj == null) throw new ArgumentNullException(nameof(json));
+            if (jobj == null) throw new ArgumentNullException(nameof(jobj));
             
             if (!jobj.ContainsKey("data"))
                 return jobj.ToObject<CloudEventV0_2>();
