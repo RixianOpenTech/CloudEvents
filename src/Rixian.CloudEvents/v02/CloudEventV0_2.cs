@@ -320,6 +320,13 @@ namespace Rixian.CloudEvents
             if (string.IsNullOrWhiteSpace(json)) throw new ArgumentOutOfRangeException(nameof(json), "Must supply a string with content.");
 
             var jobj = JObject.Parse(json);
+            return Deserialize(jobj);
+        }
+
+        public static CloudEventV0_2 Deserialize(JObject jobj)
+        {
+            if (jobj == null) throw new ArgumentNullException(nameof(json));
+            
             if (!jobj.ContainsKey("data"))
                 return jobj.ToObject<CloudEventV0_2>();
 
