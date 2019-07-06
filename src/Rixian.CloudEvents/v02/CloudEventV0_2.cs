@@ -3,10 +3,100 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Rixian.CloudEvents
 {
+    //public class Foo : CustomCreationConverter<CloudEventV0_2>
+    //{
+    //    public override CloudEventV0_2 Create(Type objectType)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+
+    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    //    {
+    //        if (objectType == typeof(CloudEventV0_2) ||
+    //            objectType == typeof(JsonCloudEventV0_2) ||
+    //            objectType == typeof(StringCloudEventV0_2) ||
+    //            objectType == typeof(BinaryCloudEventV0_2))
+    //        {
+    //            if (reader.TokenType == JsonToken.Null)
+    //                return null;
+    //            // Load JObject from stream
+    //            JObject jObject = JObject.Load(reader);
+    //            // Create target object based on JObject
+    //            var cloudEvent = Deserialize(jObject, reader, serializer);
+
+    //            if (existingValue != null)
+    //            {
+    //                existingValue.Id = cloudEvent.Id;
+    //                existingValue.Source = cloudEvent.Source;
+    //                existingValue.SchemaUrl = cloudEvent.SchemaUrl;
+    //                existingValue.ContentType = cloudEvent.ContentType;
+    //                existingValue.Time = cloudEvent.Time;
+    //                existingValue.Type = cloudEvent.Type;
+
+    //                // TODO: Data field
+    //            }
+
+    //            return cloudEvent;
+    //        }
+
+    //        return base.ReadJson(reader, objectType, existingValue, serializer);
+    //    }
+    //}
+
+    public class CloudEventV0_2JsonConverter : CustomCreationConverter<CloudEventV0_2>
+    {
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool CanWrite => false;
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (objectType == typeof(CloudEventV0_2))
+            {
+                if (reader.TokenType == JsonToken.Null)
+                    return null;
+
+
+                // Load JObject from stream
+                JObject jobj = JObject.Load(reader);
+                var cloudEvent = CloudEventV0_2.Deserialize(jobj);
+
+                if (existingValue != null && existingValue is CloudEventV0_2 existingEvent)
+                {
+                    existingEvent.Id = cloudEvent.Id;
+                    existingEvent.Source = cloudEvent.Source;
+                    existingEvent.SchemaUrl = cloudEvent.SchemaUrl;
+                    existingEvent.ContentType = cloudEvent.ContentType;
+                    existingEvent.Time = cloudEvent.Time;
+                    existingEvent.Type = cloudEvent.Type;
+
+                    // TODO: Data field
+                }
+
+                return cloudEvent;
+            }
+
+            return base.ReadJson(reader, objectType, existingValue, serializer);
+        }
+
+        public override CloudEventV0_2 Create(Type objectType)
+        {
+            return Activator.CreateInstance(objectType) as CloudEventV0_2;
+        }
+
+        private static Regex base64Regex = new Regex(CloudEventV0_2.Base64RegexPattern);
+    }
+
+    [JsonConverter(typeof(CloudEventV0_2JsonConverter))]
     public class CloudEventV0_2
     {
         //public const string RFC3339RegexPattern = @"^(?<fullyear>\d{4})-(?<month>0[1-9]|1[0-2])-(?<mday>0[1-9]|[12][0-9]|3[01])T(?<hour>[01][0-9]|2[0-3]):(?<minute>[0-5][0-9]):(?<second>[0-5][0-9]|60)(?<secfrac>\.[0-9]+)?(Z|(\+|-)(?<offset_hour>[01][0-9]|2[0-3]):(?<offset_minute>[0-5][0-9]))$";
@@ -319,34 +409,22 @@ namespace Rixian.CloudEvents
             if (json == null) throw new ArgumentNullException(nameof(json));
             if (string.IsNullOrWhiteSpace(json)) throw new ArgumentOutOfRangeException(nameof(json), "Must supply a string with content.");
 
-            var jobj = JObject.Parse(json);
-            if (!jobj.ContainsKey("data"))
-                return jobj.ToObject<CloudEventV0_2>();
+            using (var sr = new StringReader(json))
+            using (var jr = new JsonTextReader(sr))
+            {
+                var jobj = JObject.Parse(json);
+                return Deserialize(jobj);
+            }
+        }
 
-            var contentType = jobj.Value<string>("contenttype")?.ToLowerInvariant()?.Trim();
+        public static CloudEventV0_2 Deserialize(JObject jobj)
+        {
+            if (jobj == null) throw new ArgumentNullException(nameof(jobj));
 
-            // SPEC: Section 3.1 - Paragraph 3
-            // https://github.com/cloudevents/spec/blob/v0.1/json-format.md#31-special-handling-of-the-data-attribute
-            if (contentType != null && (string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase) || contentType.EndsWith("+json")))
-            {
-                return jobj.ToObject<JsonCloudEventV0_2>();
-            }
-            else if (jobj.ContainsKey("data"))
-            {
-                var data = jobj["data"]?.ToString();
-                if (base64Regex.IsMatch(data))
-                {
-                    return jobj.ToObject<BinaryCloudEventV0_2>();
-                }
-                else
-                {
-                    return jobj.ToObject<StringCloudEventV0_2>();
-                }
-            }
-            else
-            {
-                return jobj.ToObject<CloudEventV0_2>();
-            }
+            var actualType = GetEventType(jobj);
+            var cloudEvent = Activator.CreateInstance(actualType) as CloudEventV0_2;
+            JsonConvert.PopulateObject(jobj.ToString(), cloudEvent);
+            return cloudEvent;
         }
 
         public static CloudEventV0_2 CreateGenericCloudEvent(string eventType, Uri source)
@@ -420,6 +498,38 @@ namespace Rixian.CloudEvents
                 ContentType = contentType,
                 Data = payload,
             };
+        }
+
+
+        internal static Type GetEventType(JObject jobj)
+        {
+            if (jobj == null) throw new ArgumentNullException(nameof(jobj));
+
+            if (jobj.ContainsKey("data"))
+            {
+                var contentType = jobj.Value<string>("contenttype")?.ToLowerInvariant()?.Trim();
+
+                // SPEC: Section 3.1 - Paragraph 3
+                // https://github.com/cloudevents/spec/blob/v0.1/json-format.md#31-special-handling-of-the-data-attribute
+                if (contentType != null && (string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase) || contentType.EndsWith("+json")))
+                {
+                    return typeof(JsonCloudEventV0_2);
+                }
+                else if (jobj.ContainsKey("data"))
+                {
+                    var data = jobj["data"]?.ToString();
+                    if (base64Regex.IsMatch(data))
+                    {
+                        return typeof(BinaryCloudEventV0_2);
+                    }
+                    else
+                    {
+                        return typeof(StringCloudEventV0_2);
+                    }
+                }
+            }
+
+            return typeof(CloudEventV0_2);
         }
     }
 }
