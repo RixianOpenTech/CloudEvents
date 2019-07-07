@@ -78,6 +78,10 @@ namespace Rixian.CloudEvents.Tests.v02
             var evnt3 = CloudEventV0_2.Deserialize(jobj.ToString());
             evnt3.Should().NotBeNull();
             evnt3.Should().BeOfType<BinaryCloudEventV0_2>();
+
+            var evnt4 = JsonConvert.DeserializeObject<CloudEventV0_2>(jobj.ToString());
+            evnt4.Should().NotBeNull();
+            evnt4.Should().BeOfType<BinaryCloudEventV0_2>();
         }
 
         [Fact]
@@ -101,6 +105,10 @@ namespace Rixian.CloudEvents.Tests.v02
             var evnt3 = CloudEventV0_2.Deserialize(jobj.ToString());
             evnt3.Should().NotBeNull();
             evnt3.Should().BeOfType<CloudEventV0_2>();
+
+            var evnt4 = JsonConvert.DeserializeObject<CloudEventV0_2>(jobj.ToString());
+            evnt4.Should().NotBeNull();
+            evnt4.Should().BeOfType<CloudEventV0_2>();
         }
 
         [Theory]
