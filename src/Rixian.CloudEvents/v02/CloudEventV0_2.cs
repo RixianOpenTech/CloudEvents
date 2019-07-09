@@ -8,94 +8,6 @@ using System.Text.RegularExpressions;
 
 namespace Rixian.CloudEvents
 {
-    //public class Foo : CustomCreationConverter<CloudEventV0_2>
-    //{
-    //    public override CloudEventV0_2 Create(Type objectType)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-    //    {
-    //        if (objectType == typeof(CloudEventV0_2) ||
-    //            objectType == typeof(JsonCloudEventV0_2) ||
-    //            objectType == typeof(StringCloudEventV0_2) ||
-    //            objectType == typeof(BinaryCloudEventV0_2))
-    //        {
-    //            if (reader.TokenType == JsonToken.Null)
-    //                return null;
-    //            // Load JObject from stream
-    //            JObject jObject = JObject.Load(reader);
-    //            // Create target object based on JObject
-    //            var cloudEvent = Deserialize(jObject, reader, serializer);
-
-    //            if (existingValue != null)
-    //            {
-    //                existingValue.Id = cloudEvent.Id;
-    //                existingValue.Source = cloudEvent.Source;
-    //                existingValue.SchemaUrl = cloudEvent.SchemaUrl;
-    //                existingValue.ContentType = cloudEvent.ContentType;
-    //                existingValue.Time = cloudEvent.Time;
-    //                existingValue.Type = cloudEvent.Type;
-
-    //                // TODO: Data field
-    //            }
-
-    //            return cloudEvent;
-    //        }
-
-    //        return base.ReadJson(reader, objectType, existingValue, serializer);
-    //    }
-    //}
-
-    public class CloudEventV0_2JsonConverter : CustomCreationConverter<CloudEventV0_2>
-    {
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool CanWrite => false;
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            if (objectType == typeof(CloudEventV0_2))
-            {
-                if (reader.TokenType == JsonToken.Null)
-                    return null;
-
-
-                // Load JObject from stream
-                JObject jobj = JObject.Load(reader);
-                var cloudEvent = CloudEventV0_2.Deserialize(jobj);
-
-                if (existingValue != null && existingValue is CloudEventV0_2 existingEvent)
-                {
-                    existingEvent.Id = cloudEvent.Id;
-                    existingEvent.Source = cloudEvent.Source;
-                    existingEvent.SchemaUrl = cloudEvent.SchemaUrl;
-                    existingEvent.ContentType = cloudEvent.ContentType;
-                    existingEvent.Time = cloudEvent.Time;
-                    existingEvent.Type = cloudEvent.Type;
-
-                    // TODO: Data field
-                }
-
-                return cloudEvent;
-            }
-
-            return base.ReadJson(reader, objectType, existingValue, serializer);
-        }
-
-        public override CloudEventV0_2 Create(Type objectType)
-        {
-            return Activator.CreateInstance(objectType) as CloudEventV0_2;
-        }
-
-        private static Regex base64Regex = new Regex(CloudEventV0_2.Base64RegexPattern);
-    }
-
     [JsonConverter(typeof(CloudEventV0_2JsonConverter))]
     public class CloudEventV0_2
     {
@@ -444,10 +356,10 @@ namespace Rixian.CloudEvents
         public const string OctetStreamMimeType = "application/octet-stream";
 
         public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload) => 
-            CreateCloudEvent(eventType, source, payload, JsonMimeType, null, null);
-        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, string subject, Uri schemaUrl) => 
-            CreateCloudEvent(eventType, source, payload, JsonMimeType, subject, schemaUrl);
-        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, string contentType, string subject, Uri schemaUrl)
+            CreateCloudEvent(eventType, source, payload, JsonMimeType, null);
+        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, Uri schemaUrl) => 
+            CreateCloudEvent(eventType, source, payload, JsonMimeType, schemaUrl);
+        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, string contentType, Uri schemaUrl)
         {
             // Should there be some reasonable upper bound on the payload size?
             return new JsonCloudEventV0_2
@@ -463,10 +375,10 @@ namespace Rixian.CloudEvents
         }
 
         public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload) => 
-            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, null, null);
-        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, string subject, Uri schemaUrl) => 
-            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, subject, schemaUrl);
-        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, string contentType, string subject, Uri schemaUrl)
+            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, null);
+        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, Uri schemaUrl) => 
+            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, schemaUrl);
+        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, string contentType, Uri schemaUrl)
         {
             // Should there be some reasonable upper bound on the payload size?
             return new StringCloudEventV0_2
@@ -482,10 +394,10 @@ namespace Rixian.CloudEvents
         }
 
         public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload) =>
-            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, null, null);
-        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, string subject, Uri schemaUrl) =>
-            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, subject, schemaUrl);
-        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, string contentType, string subject, Uri schemaUrl)
+            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, null);
+        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, Uri schemaUrl) =>
+            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, schemaUrl);
+        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, string contentType, Uri schemaUrl)
         {
             // Should there be some reasonable upper bound on the payload size?
             return new BinaryCloudEventV0_2
@@ -511,7 +423,7 @@ namespace Rixian.CloudEvents
 
                 // SPEC: Section 3.1 - Paragraph 3
                 // https://github.com/cloudevents/spec/blob/v0.1/json-format.md#31-special-handling-of-the-data-attribute
-                if (contentType != null && (string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase) || contentType.EndsWith("+json")))
+                if (contentType != null && (string.Equals(contentType, JsonMimeType, StringComparison.OrdinalIgnoreCase) || contentType.EndsWith("+json")))
                 {
                     return typeof(JsonCloudEventV0_2);
                 }
