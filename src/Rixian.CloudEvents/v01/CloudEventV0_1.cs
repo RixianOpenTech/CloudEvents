@@ -54,19 +54,30 @@ namespace Rixian.CloudEvents
 
         public static CloudEventV0_1 Deserialize(string json)
         {
-            if (json == null) throw new ArgumentNullException(nameof(json));
-            if (string.IsNullOrWhiteSpace(json)) throw new ArgumentOutOfRangeException(nameof(json), "Must supply a string with content.");
+            if (json == null)
+            {
+                throw new ArgumentNullException(nameof(json));
+            }
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new ArgumentOutOfRangeException(nameof(json), "Must supply a string with content.");
+            }
 
             var jobj = JObject.Parse(json);
             if (!jobj.ContainsKey("data"))
+            {
                 return jobj.ToObject<CloudEventV0_1>();
+            }
 
             var contentType = jobj.Value<string>("contentType")?.ToLowerInvariant()?.Trim();
 
             // SPEC: Section 3.1 - Paragraph 3
             // https://github.com/cloudevents/spec/blob/v0.1/json-format.md#31-special-handling-of-the-data-attribute
             if (contentType == "application/json" || contentType.EndsWith("+json"))
+            {
                 return jobj.ToObject<JsonCloudEventV0_1>();
+            }
 
             try
             {

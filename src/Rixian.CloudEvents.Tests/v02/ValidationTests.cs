@@ -1,15 +1,18 @@
-using FluentAssertions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Xunit;
+// Copyright (c) Rixian. All rights reserved.
+// Licensed under the Apache License, Version 2.0 license. See LICENSE file in the project root for full license information.
 
 namespace Rixian.CloudEvents.Tests.v02
 {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using FluentAssertions;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using Xunit;
+
     public class ValidationTests
     {
         [Fact]
@@ -23,7 +26,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -40,7 +43,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }
 ";
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -55,7 +58,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }
 ";
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -69,7 +72,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }
 ";
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -86,7 +89,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -100,7 +103,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -117,7 +120,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -131,7 +134,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -146,7 +149,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '/mycontext'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -163,7 +166,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': 'https://example.com/foo'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -178,7 +181,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': ''
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -192,7 +195,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'specversion': '0.2'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -207,7 +210,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'source': '`~!@#$%^&*()-_=+[{]};:'"",<.>/?'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -227,7 +230,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'time': '2019-04-13T15:07:00.2031033+00:00'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -243,7 +246,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'time': ''
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -259,7 +262,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'time': 'ABCDEFG'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -275,7 +278,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'time': '2019-04-13T15:07:00.2031033'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -293,7 +296,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'schemaurl': 'https://example.com/foo'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -309,7 +312,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'schemaurl': ''
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -325,7 +328,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'schemaurl': '`~!@#$%^&*()-_=+[{]};:'"",<.>/?'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -344,7 +347,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'contenttype': 'text/plain'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -360,7 +363,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'contenttype': ''
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
@@ -379,7 +382,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'contenttype': '{contentType}'
 }}";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
         #endregion
@@ -398,7 +401,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'data': 'This is some text...'
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
 
@@ -414,7 +417,7 @@ namespace Rixian.CloudEvents.Tests.v02
   'data': ''
 }";
 
-            var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+            Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeFalse();
         }
 
