@@ -1,52 +1,15 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
+﻿// Copyright (c) Rixian. All rights reserved.
+// Licensed under the Apache License, Version 2.0 license. See LICENSE file in the project root for full license information.
 
 namespace Rixian.CloudEvents
 {
-    //public class Foo : CustomCreationConverter<CloudEventV0_2>
-    //{
-    //    public override CloudEventV0_2 Create(Type objectType)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-    //    {
-    //        if (objectType == typeof(CloudEventV0_2) ||
-    //            objectType == typeof(JsonCloudEventV0_2) ||
-    //            objectType == typeof(StringCloudEventV0_2) ||
-    //            objectType == typeof(BinaryCloudEventV0_2))
-    //        {
-    //            if (reader.TokenType == JsonToken.Null)
-    //                return null;
-    //            // Load JObject from stream
-    //            JObject jObject = JObject.Load(reader);
-    //            // Create target object based on JObject
-    //            var cloudEvent = Deserialize(jObject, reader, serializer);
-
-    //            if (existingValue != null)
-    //            {
-    //                existingValue.Id = cloudEvent.Id;
-    //                existingValue.Source = cloudEvent.Source;
-    //                existingValue.SchemaUrl = cloudEvent.SchemaUrl;
-    //                existingValue.ContentType = cloudEvent.ContentType;
-    //                existingValue.Time = cloudEvent.Time;
-    //                existingValue.Type = cloudEvent.Type;
-
-    //                // TODO: Data field
-    //            }
-
-    //            return cloudEvent;
-    //        }
-
-    //        return base.ReadJson(reader, objectType, existingValue, serializer);
-    //    }
-    //}
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text.RegularExpressions;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+    using Newtonsoft.Json.Linq;
 
     public class CloudEventV0_2JsonConverter : CustomCreationConverter<CloudEventV0_2>
     {
@@ -99,7 +62,7 @@ namespace Rixian.CloudEvents
     [JsonConverter(typeof(CloudEventV0_2JsonConverter))]
     public class CloudEventV0_2
     {
-        //public const string RFC3339RegexPattern = @"^(?<fullyear>\d{4})-(?<month>0[1-9]|1[0-2])-(?<mday>0[1-9]|[12][0-9]|3[01])T(?<hour>[01][0-9]|2[0-3]):(?<minute>[0-5][0-9]):(?<second>[0-5][0-9]|60)(?<secfrac>\.[0-9]+)?(Z|(\+|-)(?<offset_hour>[01][0-9]|2[0-3]):(?<offset_minute>[0-5][0-9]))$";
+        // public const string RFC3339RegexPattern = @"^(?<fullyear>\d{4})-(?<month>0[1-9]|1[0-2])-(?<mday>0[1-9]|[12][0-9]|3[01])T(?<hour>[01][0-9]|2[0-3]):(?<minute>[0-5][0-9]):(?<second>[0-5][0-9]|60)(?<secfrac>\.[0-9]+)?(Z|(\+|-)(?<offset_hour>[01][0-9]|2[0-3]):(?<offset_minute>[0-5][0-9]))$";
         public const string RFC3339RegexPattern = @"^([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(([Zz])|([\+|\-]([01][0-9]|2[0-3]):[0-5][0-9]))$";
         private static Regex rfc3339Regex = new Regex(RFC3339RegexPattern);
         

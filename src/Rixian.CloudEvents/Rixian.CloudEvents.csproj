@@ -1,8 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard1.0;netstandard2.0;net45</TargetFrameworks>
     <CodeAnalysisRuleSet>..\shipping.ruleset</CodeAnalysisRuleSet>
+    
+    <Description>
+      Library that provides a basic implementation for the cloud events spec.
+      https://github.com/cloudevents/spec
+    </Description>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
 
 </Project>
