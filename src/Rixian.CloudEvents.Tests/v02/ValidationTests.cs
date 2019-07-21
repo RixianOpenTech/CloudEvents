@@ -366,7 +366,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [Theory]
         [InlineData("aaaaaa")]
         [InlineData("pdf")]
-        [InlineData("application\\pdf")]
+        [InlineData("application//pdf")]
         public void ContentType_Invalid_Fail(string contentType)
         {
             var json = $@"
