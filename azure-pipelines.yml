@@ -3,6 +3,7 @@ trigger:
     include:
     - master
     - validate/*
+    - release/*
   paths:
     exclude:
     - doc/
@@ -15,7 +16,7 @@ variables:
   BuildConfiguration: Release
   BuildPlatform: Any CPU
   codecov_token: 6061fc46-08dd-4a9f-b8b3-9668fea8ae60
-  ci_feed: /c9303e61-4f4a-4a1c-a92c-75051416de75
+#  ci_feed: /c9303e61-4f4a-4a1c-a92c-75051416de75
 
 jobs:
 - template: azure-pipelines/build.yml
