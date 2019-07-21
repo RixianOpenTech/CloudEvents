@@ -19,7 +19,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [InlineData("json2.json")]
         public void TestJsonFiles(string fileName)
         {
-            var json = File.ReadAllText($@"./V02/samples/json/{fileName}");
+            var json = File.ReadAllText($@"./V02Tests/samples/json/{fileName}");
             var evnt = CloudEventV0_2.Deserialize(json);
 
             evnt.Should().BeOfType<JsonCloudEventV0_2>();
@@ -29,7 +29,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [InlineData("string1.json")]
         public void TestStringFilesV02(string fileName)
         {
-            var json = File.ReadAllText($@"./V02/samples/string/{fileName}");
+            var json = File.ReadAllText($@"./V02Tests/samples/string/{fileName}");
             var evnt = CloudEventV0_2.Deserialize(json);
 
             evnt.Should().BeOfType<StringCloudEventV0_2>();
@@ -39,7 +39,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [InlineData("none1.json")]
         public void TestNoDataFiles(string fileName)
         {
-            var json = File.ReadAllText($@"./V02/samples/none/{fileName}");
+            var json = File.ReadAllText($@"./V02Tests/samples/none/{fileName}");
             var evnt = CloudEventV0_2.Deserialize(json);
 
             evnt.Should().BeOfType<CloudEventV0_2>();
@@ -52,7 +52,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [InlineData("custom1.json")]
         public void CustomEvent(string fileName)
         {
-            var json = File.ReadAllText($@"./V02/samples/custom/{fileName}");
+            var json = File.ReadAllText($@"./V02Tests/samples/custom/{fileName}");
             TestCloudEvent evnt = JsonConvert.DeserializeObject<TestCloudEvent>(json);
 
             evnt.Should().NotBeNull();
@@ -114,7 +114,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [InlineData("custombinary1.json")]
         public void CustomBinaryEvent_Success(string fileName)
         {
-            var json = File.ReadAllText($@"./V02/samples/custom/{fileName}");
+            var json = File.ReadAllText($@"./V02Tests/samples/custom/{fileName}");
             TestBinaryEvent evnt = JsonConvert.DeserializeObject<TestBinaryEvent>(json);
 
             evnt.Should().NotBeNull();
@@ -130,7 +130,7 @@ namespace Rixian.CloudEvents.Tests.V02
         [InlineData("pdf1.pdf", "application/pdf")]
         public void BinaryEvent_LargeData_Success(string fileName, string contentType)
         {
-            var data = File.ReadAllBytes($@"./V02/samples/binary/{fileName}");
+            var data = File.ReadAllBytes($@"./V02Tests/samples/binary/{fileName}");
             BinaryCloudEventV0_2 evnt = CloudEventV0_2.CreateCloudEvent("test", new Uri("/", UriKind.RelativeOrAbsolute), data, contentType, null);
 
             evnt.Should().NotBeNull();

@@ -17,7 +17,7 @@ namespace Rixian.CloudEvents.Tests.V01
         [InlineData("json2.json")]
         public void TestJsonFiles(string fileName)
         {
-            var json = File.ReadAllText($@"./V01/samples/json/{fileName}");
+            var json = File.ReadAllText($@"./V01Tests/samples/json/{fileName}");
             var evnt = CloudEventV0_1.Deserialize(json);
             Assert.IsType<JsonCloudEventV0_1>(evnt);
         }
@@ -26,7 +26,7 @@ namespace Rixian.CloudEvents.Tests.V01
         [InlineData("binary1.json")]
         public void TestBinaryFiles(string fileName)
         {
-            var json = File.ReadAllText($@"./V01/samples/binary/{fileName}");
+            var json = File.ReadAllText($@"./V01Tests/samples/binary/{fileName}");
             var evnt = CloudEventV0_1.Deserialize(json);
             Assert.IsType<BinaryCloudEventV0_1>(evnt);
         }
@@ -35,7 +35,7 @@ namespace Rixian.CloudEvents.Tests.V01
         [InlineData("string1.json")]
         public void TestStringFiles(string fileName)
         {
-            var json = File.ReadAllText($@"./V01/samples/string/{fileName}");
+            var json = File.ReadAllText($@"./V01Tests/samples/string/{fileName}");
             var evnt = CloudEventV0_1.Deserialize(json);
             Assert.IsType<StringCloudEventV0_1>(evnt);
         }
@@ -44,7 +44,7 @@ namespace Rixian.CloudEvents.Tests.V01
         [InlineData("none1.json")]
         public void TestNoDataFiles(string fileName)
         {
-            var json = File.ReadAllText($@"./V01/samples/none/{fileName}");
+            var json = File.ReadAllText($@"./V01Tests/samples/none/{fileName}");
             var evnt = CloudEventV0_1.Deserialize(json);
             Assert.IsType<CloudEventV0_1>(evnt);
             Assert.IsNotType<JsonCloudEventV0_1>(evnt);
