@@ -15,7 +15,7 @@ variables:
   BuildConfiguration: Release
   BuildPlatform: Any CPU
   codecov_token: 6061fc46-08dd-4a9f-b8b3-9668fea8ae60
-  ci_feed: /e08c98c0-63d6-4dc6-80ca-944e4deaf3d2
+  ci_feed: /c9303e61-4f4a-4a1c-a92c-75051416de75
 
 jobs:
 - template: azure-pipelines/build.yml
