@@ -139,7 +139,7 @@ namespace Rixian.CloudEvents.Tests.v02
         public void BinaryEvent_LargeData_Success(string fileName, string contentType)
         {
             var data = File.ReadAllBytes($@".\v02\samples\binary\{fileName}");
-            BinaryCloudEventV0_2 evnt = CloudEventV0_2.CreateCloudEvent("test", new Uri("/", UriKind.RelativeOrAbsolute), data, contentType, null, null);
+            BinaryCloudEventV0_2 evnt = CloudEventV0_2.CreateCloudEvent("test", new Uri("/", UriKind.RelativeOrAbsolute), data, contentType, null);
             BinaryCloudEventV0_2 newEvnt = JsonConvert.DeserializeObject<BinaryCloudEventV0_2>(JsonConvert.SerializeObject(evnt));
 
             newEvnt.Should().NotBeNull();

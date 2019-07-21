@@ -11,25 +11,34 @@ namespace Rixian.CloudEvents
     using Newtonsoft.Json.Converters;
     using Newtonsoft.Json.Linq;
 
+    /// <summary>
+    /// Converter for reading JSON as a cloud event.
+    /// </summary>
     public class CloudEventV0_2JsonConverter : CustomCreationConverter<CloudEventV0_2>
     {
+        /// <inheritdoc/>
+        public override bool CanWrite => false;
 
+        /// <inheritdoc/>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             throw new NotImplementedException();
         }
 
-        public override bool CanWrite => false;
-
+        /// <inheritdoc/>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+
             if (objectType == typeof(CloudEventV0_2))
             {
                 if (reader.TokenType == JsonToken.Null)
                 {
                     return null;
                 }
-
 
                 // Load JObject from stream
                 JObject jobj = JObject.Load(reader);
@@ -53,11 +62,10 @@ namespace Rixian.CloudEvents
             return base.ReadJson(reader, objectType, existingValue, serializer);
         }
 
+        /// <inheritdoc/>
         public override CloudEventV0_2 Create(Type objectType)
         {
             return Activator.CreateInstance(objectType) as CloudEventV0_2;
         }
-
-        private static Regex base64Regex = new Regex(CloudEventV0_2.Base64RegexPattern);
     }
 }

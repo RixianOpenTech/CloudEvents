@@ -127,6 +127,11 @@ namespace Rixian.CloudEvents
         /// <returns>A tuple containing a flag indicating if the JObject is a valid cloud event, and a list of all errors.</returns>
         public static Tuple<bool, IReadOnlyList<string>> ValidateJsonDetailed(JObject jobj)
         {
+            if (jobj == null)
+            {
+                throw new ArgumentNullException(nameof(jobj));
+            }
+
             var errors = new List<string>();
             try
             {
@@ -410,7 +415,7 @@ namespace Rixian.CloudEvents
         /// Creates a generic cloud event with minimal information.
         /// </summary>
         /// <param name="eventType">The event type.</param>
-        /// <param name="source">The event source</param>
+        /// <param name="source">The event source.</param>
         /// <returns>A generic cloud event.</returns>
         public static CloudEventV0_2 CreateGenericCloudEvent(string eventType, Uri source)
         {
@@ -424,11 +429,37 @@ namespace Rixian.CloudEvents
             };
         }
 
-        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload) => 
-            CreateCloudEvent(eventType, source, payload, JsonMimeType, null, null);
-        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, string subject, Uri schemaUrl) => 
-            CreateCloudEvent(eventType, source, payload, JsonMimeType, subject, schemaUrl);
-        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, string contentType, string subject, Uri schemaUrl)
+        /// <summary>
+        /// Creates a cloud event with a JSON payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The JSON payload.</param>
+        /// <returns>A JSON cloud event.</returns>
+        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload) =>
+            CreateCloudEvent(eventType, source, payload, JsonMimeType, null);
+
+        /// <summary>
+        /// Creates a cloud event with a JSON payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The JSON payload.</param>
+        /// <param name="schemaUrl">The schema URL for this cloud event.</param>
+        /// <returns>A JSON cloud event.</returns>
+        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, Uri schemaUrl) =>
+            CreateCloudEvent(eventType, source, payload, JsonMimeType, schemaUrl);
+
+        /// <summary>
+        /// Creates a cloud event with a JSON payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The JSON payload.</param>
+        /// <param name="contentType">The content type of the JSON payload.</param>
+        /// <param name="schemaUrl">The schema URL for this cloud event.</param>
+        /// <returns>A JSON cloud event.</returns>
+        public static JsonCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, JToken payload, string contentType, Uri schemaUrl)
         {
             // Should there be some reasonable upper bound on the payload size?
             return new JsonCloudEventV0_2
@@ -443,11 +474,37 @@ namespace Rixian.CloudEvents
             };
         }
 
-        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload) => 
-            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, null, null);
-        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, string subject, Uri schemaUrl) => 
-            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, subject, schemaUrl);
-        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, string contentType, string subject, Uri schemaUrl)
+        /// <summary>
+        /// Creates a cloud event with a string payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The string payload.</param>
+        /// <returns>A string cloud event.</returns>
+        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload) =>
+            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, null);
+
+        /// <summary>
+        /// Creates a cloud event with a string payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The string payload.</param>
+        /// <param name="schemaUrl">The schema URL for this cloud event.</param>
+        /// <returns>A string cloud event.</returns>
+        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, Uri schemaUrl) =>
+            CreateCloudEvent(eventType, source, payload, PlainTextMimeType, schemaUrl);
+
+        /// <summary>
+        /// Creates a cloud event with a string payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The string payload.</param>
+        /// <param name="contentType">The content type of the JSON payload.</param>
+        /// <param name="schemaUrl">The schema URL for this cloud event.</param>
+        /// <returns>A string cloud event.</returns>
+        public static StringCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, string payload, string contentType, Uri schemaUrl)
         {
             // Should there be some reasonable upper bound on the payload size?
             return new StringCloudEventV0_2
@@ -462,11 +519,37 @@ namespace Rixian.CloudEvents
             };
         }
 
+        /// <summary>
+        /// Creates a cloud event with a binary payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The binary payload.</param>
+        /// <returns>A binary cloud event.</returns>
         public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload) =>
-            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, null, null);
-        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, string subject, Uri schemaUrl) =>
-            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, subject, schemaUrl);
-        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, string contentType, string subject, Uri schemaUrl)
+            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, null);
+
+        /// <summary>
+        /// Creates a cloud event with a binary payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The binary payload.</param>
+        /// <param name="schemaUrl">The schema URL for this cloud event.</param>
+        /// <returns>A binary cloud event.</returns>
+        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, Uri schemaUrl) =>
+            CreateCloudEvent(eventType, source, payload, OctetStreamMimeType, schemaUrl);
+
+        /// <summary>
+        /// Creates a cloud event with a binary payload.
+        /// </summary>
+        /// <param name="eventType">The event type.</param>
+        /// <param name="source">The event source.</param>
+        /// <param name="payload">The binary payload.</param>
+        /// <param name="contentType">The content type of the binary payload.</param>
+        /// <param name="schemaUrl">The schema URL for this cloud event.</param>
+        /// <returns>A binary cloud event.</returns>
+        public static BinaryCloudEventV0_2 CreateCloudEvent(string eventType, Uri source, byte[] payload, string contentType, Uri schemaUrl)
         {
             // Should there be some reasonable upper bound on the payload size?
             return new BinaryCloudEventV0_2
@@ -481,7 +564,11 @@ namespace Rixian.CloudEvents
             };
         }
 
-
+        /// <summary>
+        /// Gets the type of a raw JSON cloud event.
+        /// </summary>
+        /// <param name="jobj">The <see cref="JObject"/> payload.</param>
+        /// <returns>The <see cref="Type"/> of the event.</returns>
         internal static Type GetEventType(JObject jobj)
         {
             if (jobj == null)
@@ -491,11 +578,11 @@ namespace Rixian.CloudEvents
 
             if (jobj.ContainsKey("data"))
             {
-                var contentType = jobj.Value<string>("contenttype")?.ToLowerInvariant()?.Trim();
+                var contentType = jobj.Value<string>("contenttype")?.Trim();
 
                 // SPEC: Section 3.1 - Paragraph 3
                 // https://github.com/cloudevents/spec/blob/v0.1/json-format.md#31-special-handling-of-the-data-attribute
-                if (contentType != null && (string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase) || contentType.EndsWith("+json")))
+                if (contentType != null && (string.Equals(contentType, "application/json", StringComparison.OrdinalIgnoreCase) || contentType.EndsWith("+json", StringComparison.OrdinalIgnoreCase)))
                 {
                     return typeof(JsonCloudEventV0_2);
                 }

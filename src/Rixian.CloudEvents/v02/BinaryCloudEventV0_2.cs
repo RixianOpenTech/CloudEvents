@@ -5,10 +5,17 @@ namespace Rixian.CloudEvents
 {
     using Newtonsoft.Json;
 
+    /// <summary>
+    /// A cloud event with binary data.
+    /// </summary>
     public class BinaryCloudEventV0_2 : CloudEventV0_2
     {
-        // Optional
+#pragma warning disable CA1819 // Properties should not return arrays
+        /// <summary>
+        /// Gets or sets the binary payload.
+        /// </summary>
         [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = int.MinValue + 7)]
         public byte[] Data { get; set; }
+#pragma warning restore CA1819 // Properties should not return arrays
     }
 }
