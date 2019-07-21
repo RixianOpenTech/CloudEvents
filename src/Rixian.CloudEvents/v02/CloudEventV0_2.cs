@@ -48,12 +48,14 @@ namespace Rixian.CloudEvents
         [JsonProperty("type", Order = int.MinValue + 1)]
         public string Type { get; set; }
 
+#pragma warning disable CA1822 // Mark members as static
         /// <summary>
         /// Gets the specification version of this cloud event. Required.
         /// </summary>
         [JsonRequired]
         [JsonProperty("specversion", Order = int.MinValue + 2)]
         public string SpecVersion => "0.2";
+#pragma warning restore CA1822 // Mark members as static
 
         /// <summary>
         /// Gets or sets the source of this cloud event. Required.

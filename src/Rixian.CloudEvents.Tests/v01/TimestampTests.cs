@@ -1,7 +1,7 @@
 // Copyright (c) Rixian. All rights reserved.
 // Licensed under the Apache License, Version 2.0 license. See LICENSE file in the project root for full license information.
 
-namespace Rixian.CloudEvents.Tests.v01
+namespace Rixian.CloudEvents.Tests.V01
 {
     using System;
     using System.Text.RegularExpressions;
@@ -20,7 +20,7 @@ namespace Rixian.CloudEvents.Tests.v01
             StringCloudEventV0_1 evnt = CloudEventV0_1.CreateCloudEvent("test", "1.0", new Uri("http://localhost"), "FooBar");
             var json = JToken.FromObject(evnt);
             var eventTime = json["eventTime"].ToString();
-            Assert.Matches(rfc399Regex, eventTime);
+            Assert.Matches(this.rfc399Regex, eventTime);
         }
     }
 }

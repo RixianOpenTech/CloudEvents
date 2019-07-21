@@ -30,12 +30,14 @@ namespace Rixian.CloudEvents
         [JsonProperty("eventTypeVersion", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate)]
         public string EventTypeVersion { get; set; }
 
+#pragma warning disable CA1822 // Mark members as static
         /// <summary>
         /// Gets the specification version of this cloud event. Required.
         /// </summary>
         [JsonRequired]
         [JsonProperty("cloudEventsVersion")]
         public string CloudEventsVersion => "0.1";
+#pragma warning restore CA1822 // Mark members as static
 
         /// <summary>
         /// Gets or sets the source of this cloud event. Required.

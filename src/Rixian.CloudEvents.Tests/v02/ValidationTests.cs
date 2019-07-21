@@ -1,7 +1,7 @@
 // Copyright (c) Rixian. All rights reserved.
 // Licensed under the Apache License, Version 2.0 license. See LICENSE file in the project root for full license information.
 
-namespace Rixian.CloudEvents.Tests.v02
+namespace Rixian.CloudEvents.Tests.V02
 {
     using System;
     using System.IO;
@@ -29,7 +29,6 @@ namespace Rixian.CloudEvents.Tests.v02
             Tuple<bool, System.Collections.Generic.IReadOnlyList<string>> validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
             validationResults.Item1.Should().BeTrue();
         }
-
 
         #region id Field Tests
         [Fact]
@@ -215,8 +214,6 @@ namespace Rixian.CloudEvents.Tests.v02
         }
         #endregion
 
-
-
         #region time Field Tests
         [Fact]
         public void Time_Basic_Success()
@@ -333,7 +330,6 @@ namespace Rixian.CloudEvents.Tests.v02
         }
         #endregion
 
-
         #region contenttype Field Tests
         [Fact]
         public void ContentType_Basic_Success()
@@ -387,7 +383,6 @@ namespace Rixian.CloudEvents.Tests.v02
         }
         #endregion
 
-
         #region data Field Tests
         [Fact]
         public void Data_String_Basic_Success()
@@ -421,32 +416,34 @@ namespace Rixian.CloudEvents.Tests.v02
             validationResults.Item1.Should().BeFalse();
         }
 
-//        [Fact]
-//        public void Data_String_BLNS_Success()
-//        {
-//            var blns = GetBlns();
+        /*
+        [Fact]
+        public void Data_String_BLNS_Success()
+        {
+            var blns = GetBlns();
 
-//            foreach (var str in blns)
-//            {
-//                var json = $@"
-//{{
-//  'id': 'C234-1234-1234',
-//  'type': 'com.example.someevent',
-//  'specversion': '0.2',
-//  'source': '/mycontext',
-//  'data': '{str}'
-//}}";
+            foreach (var str in blns)
+            {
+                var json = $@"
+ {{
+   'id': 'C234-1234-1234',
+   'type': 'com.example.someevent',
+   'specversion': '0.2',
+   'source': '/mycontext',
+   'data': '{str}'
+ }}";
 
-//                var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
-//                validationResults.Item1.Should().BeTrue();
-//            }
-//        }
+                var validationResults = CloudEventV0_2.ValidateJsonDetailed(json);
+                validationResults.Item1.Should().BeTrue();
+            }
+        }
+        */
         #endregion
 
         private static string[] GetBlns()
         {
             var lines = File.ReadAllLines(@"blns.txt");
-            return lines.Where(l => l.StartsWith("#") == false).Where(l => string.IsNullOrEmpty(l) == false).ToArray();
+            return lines.Where(l => l.StartsWith("#", StringComparison.OrdinalIgnoreCase) == false).Where(l => string.IsNullOrEmpty(l) == false).ToArray();
         }
     }
 }
