@@ -2,25 +2,32 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.0;netstandard2.0;net45</TargetFrameworks>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Copyright>© Rixian LLC. All rights reserved.</Copyright>
-    <Description>Library that provides a basic implementation for the cloud events spec.
-https://github.com/cloudevents/spec</Description>
-    <PackageIconUrl>https://storagerixiannet.blob.core.windows.net/public/nuget/icons/nuget-rixian-256.png</PackageIconUrl>
-    <Company>Rixian</Company>
-    <Product>Rixian</Product>
-    <Authors>Rixian</Authors>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <Version>1.0.1</Version>
+    <CodeAnalysisRuleSet>..\shipping.ruleset</CodeAnalysisRuleSet>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    
+    <Description>
+      Library that provides a basic implementation for the cloud events spec.
+      https://github.com/cloudevents/spec
+    </Description>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <Folder Include="v01\" />
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
